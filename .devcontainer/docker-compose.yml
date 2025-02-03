@@ -1,0 +1,40 @@
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    volumes:
+      - ..:/workspace:cached
+      - go-cache:/go
+      - type: bind
+        source: ${HOME}/.gitconfig
+        target: /root/.gitconfig
+      - type: bind
+        source: ${HOME}/.ssh
+        target: /root/.ssh
+    command: sleep infinity
+    environment:
+      - TZ=Asia/Tokyo
+      - LANG=en_US.UTF-8
+    network_mode: service:db
+
+  db:
+    image: mysql:8.0
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: devpassword
+      MYSQL_DATABASE: devdb
+      MYSQL_USER: devuser
+      MYSQL_PASSWORD: devpassword
+    volumes:
+      - mysql-data:/var/lib/mysql
+    command: --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
+
+  redis:
+    image: redis:alpine
+    restart: unless-stopped
+    network_mode: service:db
+
+volumes:
+  go-cache:
+  mysql-data:
